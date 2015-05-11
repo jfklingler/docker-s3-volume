@@ -1,5 +1,5 @@
 FROM ubuntu:14.04
-MAINTAINER Dave Newman <dave@assembly.com>
+MAINTAINER John Klingler <jfklingler@gmail.com>
 
 RUN apt-get update && apt-get install -y awscli
 ADD watch /watch
