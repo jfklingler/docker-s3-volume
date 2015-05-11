@@ -34,6 +34,7 @@ do
 
     --)
       shift
+      SYNC_OPTIONS=$@
       break;;
   esac
 done
@@ -41,7 +42,8 @@ done
 PROGNAME=$0
 LOCAL=$1
 REMOTE=$2
-SYNC_OPTIONS=$3
+
+echo Maintaining sync from $LOCAL to $REMOTE with options: $SYNC_OPTIONS
 
 if [[ ! "$LOCAL" || ! "$REMOTE" ]]; then
   echo "You need to specify a local directory and remote S3 location"
