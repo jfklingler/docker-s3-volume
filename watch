@@ -55,6 +55,10 @@ function restore {
 		fi
   fi
 
+  force_restore
+}
+
+function force_restore {
   echo "restoring $REMOTE => $LOCAL"
   if ! aws s3 sync "$REMOTE" "$LOCAL" $SYNC_OPTIONS; then
     error_exit "restore failed"
@@ -90,5 +94,6 @@ restore
 
 trap final_backup SIGHUP SIGINT SIGTERM
 trap "backup; idle" USR1
+trap "force_restore; idle" USR2
 
 idle
