@@ -4,12 +4,14 @@
 
 function usage {
 	cat <<-EOF
-	Usage: $PROGNAME [OPTIONS] <local-path> <remote-path>
+	Usage: $PROGNAME [OPTIONS] <local-path> <remote-path> [-- <sync-options>]
 	Sync s3 directory locally and backup changed files on exit
 
-	  --force-restore      restore even if local directory is not empty
+	  -f, --force-restore           restore even if local directory is not empty
+	  -h, --help                    display this message
+	  -o <owner>, --owner <owner>   change ownership of restored files to <owner>
 
-	   eg: $PROGNAME /data s3://bucket/dir
+	   eg: $PROGNAME /data s3://bucket/dir -o user:group -f -- --delete --exclude /useless_file
 	EOF
 }
 
@@ -18,9 +20,10 @@ function error_exit {
 	exit 1
 }
 
-PARSED_OPTIONS=$(getopt -n "$0" -o f --long "force-restore" -- "$@")
+PARSED_OPTIONS=$(getopt -n "$0" -o fho: --long force-restore,help,owner: -- "$@")
 if [ $? -ne 0 ];
 then
+  usage
   exit 1
 fi
 eval set -- "$PARSED_OPTIONS"
@@ -31,6 +34,15 @@ do
 		-f|--force-restore)
       FORCE_RESTORE="true"
       shift;;
+
+    -h|--help)
+      usage
+      exit 0
+      shift;;
+
+    -o|--owner)
+      CHOWN=$2
+      shift 2;;
 
     --)
       shift
@@ -44,9 +56,13 @@ LOCAL=$1
 REMOTE=$2
 
 echo Maintaining sync from $LOCAL to $REMOTE with options: $SYNC_OPTIONS
+if [[ "$CHOWN" ]]; then
+  echo Setting ownership of synced files to $CHOWN
+fi
 
 if [[ ! "$LOCAL" || ! "$REMOTE" ]]; then
   echo "You need to specify a local directory and remote S3 location"
+  usage
   exit 1
 fi
 
@@ -64,6 +80,10 @@ function force_restore {
   echo "restoring $REMOTE => $LOCAL"
   if ! aws s3 sync "$REMOTE" "$LOCAL" $SYNC_OPTIONS; then
     error_exit "restore failed"
+  else
+    if [[ "$CHOWN" ]]; then
+      chown -R $CHOWN $LOCAL
+    fi
   fi
 }
 

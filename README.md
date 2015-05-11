@@ -29,3 +29,7 @@ docker run -it --rm \
 ```
 
 See http://docs.aws.amazon.com/cli/latest/reference/s3/sync.html for details.
+
+Options:
+* -f, --force - restore even if local directory is not empty
+* -o <owner>, --owner <owner> - change ownership of restored files to <owner>
