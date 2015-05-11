@@ -41,6 +41,12 @@ done
 PROGNAME=$0
 LOCAL=$1
 REMOTE=$2
+SYNC_OPTIONS=$3
+
+if [[ ! "$LOCAL" || ! "$REMOTE" ]]; then
+  echo "You need to specify a local directory and remote S3 location"
+  exit 1
+fi
 
 function restore {
   if [ "$(ls -A $LOCAL)" ]; then
@@ -50,14 +56,14 @@ function restore {
   fi
 
   echo "restoring $REMOTE => $LOCAL"
-  if ! aws s3 sync "$REMOTE" "$LOCAL"; then
+  if ! aws s3 sync "$REMOTE" "$LOCAL" $SYNC_OPTIONS; then
     error_exit "restore failed"
   fi
 }
 
 function backup {
   echo "backup $LOCAL => $REMOTE"
-  if ! aws s3 sync "$LOCAL" "$REMOTE"; then
+  if ! aws s3 sync "$LOCAL" "$REMOTE" $SYNC_OPTIONS; then
     echo "backup failed" 1>&2
     return 1
   fi
@@ -65,7 +71,7 @@ function backup {
 
 function final_backup {
   echo "backup $LOCAL => $REMOTE"
-  while ! aws s3 sync "$LOCAL" "$REMOTE"; do
+  while ! aws s3 sync "$LOCAL" "$REMOTE" $SYNC_OPTIONS; do
     echo "backup failed" 1>&2
     sleep 1
   done
