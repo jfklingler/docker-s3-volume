@@ -7,7 +7,25 @@ Usage:
 
 ```
 docker run -it --rm \
-  -e ACCESS_KEY=... -e SECRET_KEY=... whatupdave/s3-volume s3://<BUCKET>/<PATH>
+  -e AWS_ACCESS_KEY_ID=... \
+  -e AWS_SECRET_ACCESS_KEY=... \
+  -e AWS_DEFAULT_REGION=... \
+  -v /<volume path> \
+  jfklingler/s3-volume /<volume path> s3://<BUCKET>/<PATH>
 ```
 
-This pulls down the contents of a directory on S3. If the container is stopped or sent a `USR1` signal, it will backup the modified local contents to S3.
+This pulls down the contents of a directory on S3. If the container is stopped or sent a `USR1` signal, it will backup the modified local 
+contents to S3. A `USR2` signal will force the restoration of S3 contents to the local directory.
+
+You can also pass arbitrary options to the sync process:
+
+```
+docker run -it --rm \
+  -e AWS_ACCESS_KEY_ID=... \
+  -e AWS_SECRET_ACCESS_KEY=... \
+  -e AWS_DEFAULT_REGION=... \
+  -v /<volume path> \
+  jfklingler/s3-volume /<volume path> s3://<BUCKET>/<PATH> -- --exclude /useless --delete
+```
+
+See http://docs.aws.amazon.com/cli/latest/reference/s3/sync.html for details.
